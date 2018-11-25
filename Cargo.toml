@@ -1,0 +1,9 @@
+[package]
+name = "atomizer"
+version = "0.0.1"
+authors = ["Nicole Mazzuca <npmazzuca@gmail.com>"]
+edition = "2018"
+description = "Squatting on a name for a symbol intern library"
+license = "Apache-2.0"
+
+[dependencies]
