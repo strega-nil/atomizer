@@ -7,3 +7,6 @@ description = "Squatting on a name for a symbol intern library"
 license = "Apache-2.0"
 
 [dependencies]
+
+[features]
+nightly = []
