@@ -40,3 +40,27 @@ unsafe impl<T: ?Sized> StablePointer for std::rc::Rc<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::sync::Arc<T> {}
 unsafe impl<T> StablePointer for Vec<T> {}
 unsafe impl StablePointer for String {}
+
+pub trait AtomProxy<Owned>
+  where Owned: Borrow<<Self as AtomProxy<Owned>>::Compare>
+{
+  type Compare: ?Sized + Ord;
+
+  fn to_owned(&self) -> Owned;
+  fn to_compare(&self) -> &Self::Compare;
+}
+
+impl<T> AtomProxy<T> for <T as Deref>::Target
+where
+  T: Deref + Borrow<<T as Deref>::Target>,
+  <T as Deref>::Target: Ord + ToOwned<Owned = T>,
+{
+  type Compare = <T as Deref>::Target;
+
+  fn to_owned(&self) -> T {
+    <Self::Compare as ToOwned>::to_owned(self)
+  }
+  fn to_compare(&self) -> &Self {
+    self
+  }
+}
