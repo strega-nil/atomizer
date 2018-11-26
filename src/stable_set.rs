@@ -1,10 +1,11 @@
-use std::{cell, collections};
-use std::{cmp::Ord, ops::Deref, borrow::Borrow};
 use std::marker::PhantomData;
+use std::{borrow::Borrow, cmp::Ord, ops::Deref};
+use std::{cell, collections};
 
 use super::{Atom, StablePointer};
 
-pub struct StableSet<T: StablePointer, CmpObject = <T as Deref>::Target> {
+pub struct StableSet<T: StablePointer, CmpObject: ?Sized = <T as Deref>::Target>
+{
   // for safety, this must be append-only
   // _never_ remove any values from it
   set: cell::UnsafeCell<collections::BTreeSet<T>>,
@@ -14,7 +15,7 @@ pub struct StableSet<T: StablePointer, CmpObject = <T as Deref>::Target> {
 impl<T, CmpObject> StableSet<T, CmpObject>
 where
   T: StablePointer + Ord + Borrow<CmpObject>,
-  CmpObject: Ord,
+  CmpObject: ?Sized + Ord,
 {
   pub fn new() -> Self {
     StableSet {
@@ -24,11 +25,12 @@ where
   }
 
   pub fn add_element<'a, 'b, U>(
-    &'a self, element: &'b U,
+    &'a self,
+    element: &'b U,
   ) -> Atom<'a, <T as std::ops::Deref>::Target>
-    where
-      U: Borrow<CmpObject>,
-      &'b U: Into<T>,
+  where
+    U: ?Sized + Borrow<CmpObject>,
+    &'b U: Into<T>,
   {
     unsafe {
       // safe because we don't allow anybody to get a reference to the innards

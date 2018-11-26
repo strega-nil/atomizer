@@ -3,7 +3,7 @@
 pub mod stable_set;
 //pub mod stable_map;
 
-use std::{ops::Deref, borrow::Borrow};
+use std::{borrow::Borrow, ops::Deref};
 
 mod impls;
 
@@ -30,7 +30,10 @@ impl<'a, T: ?Sized> Atom<'a, T> {
   i.e., when `*t` moves, the underlying `<T as Deref>::Target` does not move
 */
 #[cfg_attr(feature = "nightly", marker)]
-pub unsafe trait StablePointer: Deref + Borrow<<Self as Deref>::Target> {}
+pub unsafe trait StablePointer:
+  Deref + Borrow<<Self as Deref>::Target>
+{
+}
 
 unsafe impl<T: ?Sized> StablePointer for Box<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::rc::Rc<T> {}
