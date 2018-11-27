@@ -30,9 +30,7 @@ where
   let cmp = element.to_compare();
   let entry = set.raw_entry_mut().from_key(cmp);
   match entry {
-    RawEntryMut::Occupied(entry) => {
-      entry.key()
-    }
+    RawEntryMut::Occupied(entry) => entry.key(),
     RawEntryMut::Vacant(entry) => {
       let (key, _) = entry.insert(element.to_owned(), ());
       key
@@ -91,7 +89,7 @@ where
       // without an indirection
       // and because we never remove
       let inner = &mut *self.set.get();
-      Atom::new((&*add_element_insert(inner, element)).borrow())
+      Atom::new(&*add_element_insert(inner, element))
     }
   }
 }

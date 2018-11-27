@@ -4,7 +4,7 @@
 pub mod stable_set;
 //pub mod stable_map;
 
-use std::{hash::Hash, borrow::Borrow, ops::Deref};
+use std::{borrow::Borrow, hash::Hash, ops::Deref};
 
 mod impls;
 
@@ -31,10 +31,7 @@ impl<'a, T: ?Sized> Atom<'a, T> {
   i.e., when `*t` moves, the underlying `<T as Deref>::Target` does not move
 */
 #[cfg_attr(feature = "nightly", marker)]
-pub unsafe trait StablePointer:
-  Deref + Borrow<<Self as Deref>::Target>
-{
-}
+pub unsafe trait StablePointer: Deref {}
 
 unsafe impl<T: ?Sized> StablePointer for Box<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::rc::Rc<T> {}
@@ -43,7 +40,8 @@ unsafe impl<T> StablePointer for Vec<T> {}
 unsafe impl StablePointer for String {}
 
 pub trait AtomProxy<Owned>
-  where Owned: Borrow<<Self as AtomProxy<Owned>>::Compare>
+where
+  Owned: Borrow<<Self as AtomProxy<Owned>>::Compare>,
 {
   type Compare: ?Sized + Hash + Eq;
 
