@@ -1,6 +1,6 @@
 [package]
 name = "atomizer"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Nicole Mazzuca <npmazzuca@gmail.com>"]
 edition = "2018"
 description = "StableSet library, for interned data"

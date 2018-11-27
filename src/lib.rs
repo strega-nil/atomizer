@@ -1,9 +1,10 @@
 #![cfg_attr(feature = "nightly", feature(marker_trait_attr))]
+#![cfg_attr(feature = "nightly", feature(hash_raw_entry))]
 
 pub mod stable_set;
 //pub mod stable_map;
 
-use std::{borrow::Borrow, ops::Deref};
+use std::{hash::Hash, borrow::Borrow, ops::Deref};
 
 mod impls;
 
@@ -44,7 +45,7 @@ unsafe impl StablePointer for String {}
 pub trait AtomProxy<Owned>
   where Owned: Borrow<<Self as AtomProxy<Owned>>::Compare>
 {
-  type Compare: ?Sized + Ord;
+  type Compare: ?Sized + Hash + Eq;
 
   fn to_owned(&self) -> Owned;
   fn to_compare(&self) -> &Self::Compare;
@@ -53,7 +54,7 @@ pub trait AtomProxy<Owned>
 impl<T> AtomProxy<T> for <T as Deref>::Target
 where
   T: Deref + Borrow<<T as Deref>::Target>,
-  <T as Deref>::Target: Ord + ToOwned<Owned = T>,
+  <T as Deref>::Target: Hash + Eq + ToOwned<Owned = T>,
 {
   type Compare = <T as Deref>::Target;
 
