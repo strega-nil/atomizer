@@ -1,20 +1,34 @@
-use std::{borrow::Borrow, hash::Hash};
+use std::{borrow::Borrow, hash::Hash, ops::Deref};
 use std::{cell, collections};
 
 use super::{Atom, AtomProxy, StablePointer};
 
+// note: we use a `HashMap` on nightly in order to get access to the
+// `raw_entry` API
 #[cfg(feature = "nightly")]
-pub struct StableSet<T: StablePointer> {
-  // for safety, this must be append-only
-  // _never_ remove any values from it
-  set: cell::UnsafeCell<collections::HashMap<T, ()>>,
-}
+type HashSet<T> = collections::HashMap<T, ()>;
 
 #[cfg(not(feature = "nightly"))]
-pub struct StableSet<T: StablePointer> {
+type HashSet<T> = collections::HashSet<T>;
+
+pub struct StableSet<T> {
   // for safety, this must be append-only
   // _never_ remove any values from it
-  set: cell::UnsafeCell<collections::HashSet<T>>,
+  set: cell::UnsafeCell<HashSet<T>>,
+}
+
+/*
+  Since we hold no pointers into the set
+  (only into the elements themselves),
+  we can send it across thread boundaries,
+  as long as the members are Send, and <T as Deref>::Target: Sync
+  (Send because we own them, Sync because we pass out pointers to them)
+*/
+unsafe impl<T> Send for StableSet<T>
+where
+  T: Send + Deref,
+  <T as Deref>::Target: Sync,
+{
 }
 
 #[cfg(feature = "nightly")]
@@ -79,7 +93,7 @@ where
   pub fn add_element<'a, 'b, U>(
     &'a self,
     element: &'b U,
-  ) -> Atom<'a, <T as std::ops::Deref>::Target>
+  ) -> Atom<'a, <T as Deref>::Target>
   where
     U: ?Sized + AtomProxy<T>,
     T: Borrow<<U as AtomProxy<T>>::Compare>,

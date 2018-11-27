@@ -1,5 +1,6 @@
 #![cfg_attr(feature = "nightly", feature(marker_trait_attr))]
 #![cfg_attr(feature = "nightly", feature(hash_raw_entry))]
+#![cfg_attr(feature = "nightly", feature(fundamental))]
 
 pub mod stable_set;
 //pub mod stable_map;
@@ -8,17 +9,23 @@ use std::{borrow::Borrow, hash::Hash, ops::Deref};
 
 mod impls;
 
+/**
+  An `Atom<'a, T>` is almost equivalent to an `&'a T`,
+  except that equality compares the pointer identity, rather than
+  doing a deep equality comparison.
+*/
+#[cfg_attr(feature = "nightly", fundamental)]
 pub struct Atom<'a, T: ?Sized> {
-  __ptr: &'a T,
+  ptr: &'a T,
 }
 
 impl<'a, T: ?Sized> Atom<'a, T> {
-  fn new(__ptr: &'a T) -> Self {
-    Atom { __ptr }
+  fn new(ptr: &'a T) -> Self {
+    Atom { ptr }
   }
 
   pub fn as_ref(p: Self) -> &'a T {
-    p.__ptr
+    p.ptr
   }
 }
 
