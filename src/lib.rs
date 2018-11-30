@@ -56,15 +56,16 @@ where
   fn to_compare(&self) -> &Self::Compare;
 }
 
-impl<T> AtomProxy<T> for <T as Deref>::Target
+impl<T, Owned> AtomProxy<Owned> for T
 where
-  T: Deref + Borrow<<T as Deref>::Target>,
-  <T as Deref>::Target: Hash + Eq + ToOwned<Owned = T>,
+  Owned: Borrow<T>,
+  T: Hash + Eq,
+  for <'a> &'a T: Into<Owned>
 {
-  type Compare = <T as Deref>::Target;
+  type Compare = T;
 
-  fn to_owned(&self) -> T {
-    <Self::Compare as ToOwned>::to_owned(self)
+  fn to_owned(&self) -> Owned {
+    <&Self as Into<Owned>>::into(self)
   }
   fn to_compare(&self) -> &Self {
     self
