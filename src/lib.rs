@@ -45,6 +45,8 @@ unsafe impl<T: ?Sized> StablePointer for std::rc::Rc<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::sync::Arc<T> {}
 unsafe impl<T> StablePointer for Vec<T> {}
 unsafe impl StablePointer for String {}
+unsafe impl StablePointer for std::ffi::CString {}
+unsafe impl StablePointer for std::ffi::OsString {}
 
 pub trait AtomProxy<Owned>
 where
