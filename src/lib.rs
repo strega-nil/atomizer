@@ -31,15 +31,14 @@ impl<'a, T: ?Sized> Atom<'a, T> {
 
 /**
   This trait guarantees that, for a type T: StablePointer,
-  given a value `t: &'a T`:
-
-    `&**t` shall live for at least `'a`
-
-  i.e., when `*t` moves, the underlying `<T as Deref>::Target` does not move
+  given a value `t: T`, `&*t` shall be valid until `t` is dropped.
+  i.e., when `t` moves, the underlying `<T as Deref>::Target` does not move
 */
 #[cfg_attr(feature = "nightly", marker)]
 pub unsafe trait StablePointer: Deref {}
 
+unsafe impl<'a, T: 'a + ?Sized> StablePointer for &'a T {}
+unsafe impl<'a, T: 'a + ?Sized> StablePointer for &'a mut T {}
 unsafe impl<T: ?Sized> StablePointer for Box<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::rc::Rc<T> {}
 unsafe impl<T: ?Sized> StablePointer for std::sync::Arc<T> {}
