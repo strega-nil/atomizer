@@ -1,8 +1,8 @@
+use crate::wrapper::{Borrowing, Referencing};
 use core::borrow::Borrow;
-use core::cmp;
 use core::default::Default;
-use core::hash;
 use core::marker::PhantomData;
+use core::{cmp, hash};
 
 pub trait Hash<T: ?Sized> {
   fn hash<H: hash::Hasher>(&self, val: &T, state: &mut H);
@@ -38,73 +38,47 @@ impl<T: cmp::Eq + ?Sized> Eq<T> for Natural<T> {
   }
 }
 
-pub struct Borrowing<B: ?Sized, C>(C, PhantomData<fn(B)>);
-
-impl<B: ?Sized, C> Borrowing<B, C> {
-  pub fn new(c: C) -> Self {
-    Self(c, PhantomData)
-  }
-}
-
-impl<B: ?Sized, C: Default> Default for Borrowing<B, C> {
-  fn default() -> Self {
-    Self(C::default(), PhantomData)
-  }
-}
-
-impl<B: ?Sized, C, T: ?Sized> Hash<T> for Borrowing<B, C>
+impl<Ref: ?Sized, Wrapped, T: ?Sized> Hash<T> for Borrowing<Ref, Wrapped>
 where
-  C: Hash<B>,
-  T: Borrow<B>,
+  Wrapped: Hash<Ref>,
+  T: Borrow<Ref>,
 {
   fn hash<H: hash::Hasher>(&self, val: &T, state: &mut H) {
-    self.0.hash(val.borrow(), state)
+    self.get_wrapped().hash(val.borrow(), state)
   }
 }
 
-impl<B: ?Sized, C, L: ?Sized, R: ?Sized> Eq<L, R> for Borrowing<B, C>
+impl<Ref: ?Sized, Wrapped, L: ?Sized, R: ?Sized> Eq<L, R>
+  for Borrowing<Ref, Wrapped>
 where
-  C: Eq<B, B>,
-  L: Borrow<B>,
-  R: Borrow<B>,
+  Wrapped: Eq<Ref, Ref>,
+  L: Borrow<Ref>,
+  R: Borrow<Ref>,
 {
   fn eq(&self, l: &L, r: &R) -> bool {
-    self.0.eq(l.borrow(), r.borrow())
+    self.get_wrapped().eq(l.borrow(), r.borrow())
   }
 }
 
-pub struct Referencing<B: ?Sized, C = Natural<B>>(C, PhantomData<fn(&B)>);
-
-impl<B: ?Sized, C> Referencing<B, C> {
-  pub fn new(c: C) -> Self {
-    Self(c, PhantomData)
-  }
-}
-
-impl<B: ?Sized, C: Default> Default for Referencing<B, C> {
-  fn default() -> Self {
-    Self(C::default(), PhantomData)
-  }
-}
-
-impl<B: ?Sized, C, T: ?Sized> Hash<T> for Referencing<B, C>
+impl<Ref: ?Sized, Wrapped, T: ?Sized> Hash<T> for Referencing<Ref, Wrapped>
 where
-  C: Hash<B>,
-  T: AsRef<B>,
+  Wrapped: Hash<Ref>,
+  T: AsRef<Ref>,
 {
   fn hash<H: hash::Hasher>(&self, val: &T, state: &mut H) {
-    self.0.hash(val.as_ref(), state)
+    self.get_wrapped().hash(val.as_ref(), state)
   }
 }
 
-impl<B: ?Sized, C, L: ?Sized, R: ?Sized> Eq<L, R> for Referencing<B, C>
+impl<Ref: ?Sized, Wrapped, L: ?Sized, R: ?Sized> Eq<L, R>
+  for Referencing<Ref, Wrapped>
 where
-  C: Eq<B, B>,
-  L: AsRef<B>,
-  R: AsRef<B>,
+  Wrapped: Eq<Ref, Ref>,
+  L: AsRef<Ref>,
+  R: AsRef<Ref>,
 {
   fn eq(&self, l: &L, r: &R) -> bool {
-    self.0.eq(l.as_ref(), r.as_ref())
+    self.get_wrapped().eq(l.as_ref(), r.as_ref())
   }
 }
 
@@ -116,7 +90,7 @@ mod test {
   pub fn referenced_u8_equality() {
     let v: Vec<u8> = vec![0x20, 0x61];
     let s = " a".to_string();
-    let cmp: Referencing<[u8]> = Default::default();
+    let cmp: Referencing<[u8], Natural<[u8]>> = Default::default();
 
     assert!(cmp.eq(&v, &s));
   }

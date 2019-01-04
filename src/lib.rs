@@ -4,10 +4,12 @@
 
 pub mod stable_set;
 //pub mod stable_map;
+pub mod compare;
+pub mod normalize;
+pub mod wrapper;
 
 use std::{borrow::Borrow, hash::Hash, ops::Deref};
 
-pub mod compare;
 mod impls;
 
 /**
