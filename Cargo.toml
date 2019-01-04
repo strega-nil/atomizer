@@ -1,7 +1,7 @@
 [package]
 name = "atomizer"
 version = "0.0.3"
-authors = ["Nicole Mazzuca <npmazzuca@gmail.com>"]
+authors = ["Nicole Mazzuca <npmazzuca@gmail.com>", "Alexis Hunt <alercah@gmail.com>"]
 edition = "2018"
 description = "StableSet library, for interned data"
 license = "Apache-2.0"
