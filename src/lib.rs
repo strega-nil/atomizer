@@ -7,6 +7,7 @@ pub mod stable_set;
 
 use std::{borrow::Borrow, hash::Hash, ops::Deref};
 
+pub mod compare;
 mod impls;
 
 /**
@@ -60,7 +61,7 @@ impl<T, Owned> AtomProxy<Owned> for T
 where
   Owned: Borrow<T>,
   T: Hash + Eq,
-  for <'a> &'a T: Into<Owned>
+  for<'a> &'a T: Into<Owned>,
 {
   type Compare = T;
 
